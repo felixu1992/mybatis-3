@@ -57,8 +57,19 @@ public class PropertyParser {
   }
 
   private static class VariableTokenHandler implements TokenHandler {
+    /**
+     * 变量 Properties 对象
+     */
     private final Properties variables;
+    /**
+     * 是否开启默认值
+     * 默认为 org.apache.ibatis.parsing.PropertyParser.enable-default-value
+     */
     private final boolean enableDefaultValue;
+    /**
+     * 默认值的分隔符
+     * 默认为 ':'
+     */
     private final String defaultValueSeparator;
 
     private VariableTokenHandler(Properties variables) {
@@ -73,23 +84,33 @@ public class PropertyParser {
 
     @Override
     public String handleToken(String content) {
+      // 变量不为 null
       if (variables != null) {
         String key = content;
+        // 使用默认值
         if (enableDefaultValue) {
+          // 找到分隔符的位置
           final int separatorIndex = content.indexOf(defaultValueSeparator);
           String defaultValue = null;
+          // 存在分隔符
           if (separatorIndex >= 0) {
+            // 获取分隔符的前一段作为 key
             key = content.substring(0, separatorIndex);
+            // 获取分隔符后一段作为默认值
             defaultValue = content.substring(separatorIndex + defaultValueSeparator.length());
           }
+          // 默认值不为 null
           if (defaultValue != null) {
+            // 优先用默认值替换
             return variables.getProperty(key, defaultValue);
           }
         }
+        // 无默认值直接替换
         if (variables.containsKey(key)) {
           return variables.getProperty(key);
         }
       }
+      // 无变量直接返回
       return "${" + content + "}";
     }
   }
